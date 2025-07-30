@@ -1,28 +1,37 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-// Uncomment and add these packages to pubspec.yaml when ready:
-// import 'package:audioplayers/audioplayers.dart';
-// import 'package:vibration/vibration.dart';
-// import 'package:torch_light/torch_light.dart';
+import 'package:torch_light/torch_light.dart';
+import 'package:vibration/vibration.dart';
 
 class TriggerService {
   static Future<void> playSound() async {
-    // TODO: Implement using audioplayers
-    // final player = AudioPlayer();
-    // await player.play(AssetSource('sounds/alarm.mp3'));
+    try {
+      final player = AudioPlayer();
+      // Make sure you have a sound file at assets/sounds/alarm.mp3 and declared in pubspec.yaml
+      await player.play(AssetSource('sounds/alarm.mp3'));
+    } catch (e) {
+      debugPrint('Error playing sound: $e');
+    }
   }
 
   static Future<void> vibrateDevice() async {
-    // TODO: Implement using vibration
-    // if (await Vibration.hasVibrator() ?? false) {
-    //   Vibration.vibrate(duration: 1000);
-    // }
+    try {
+      if (await Vibration.hasVibrator() ?? false) {
+        Vibration.vibrate(duration: 1000);
+      }
+    } catch (e) {
+      debugPrint('Error vibrating device: $e');
+    }
   }
 
   static Future<void> flashLight() async {
-    // TODO: Implement using torch_light
-    // await TorchLight.enableTorch();
-    // await Future.delayed(Duration(seconds: 2));
-    // await TorchLight.disableTorch();
+    try {
+      await TorchLight.enableTorch();
+      await Future.delayed(const Duration(seconds: 2));
+      await TorchLight.disableTorch();
+    } catch (e) {
+      debugPrint('Error using flashlight: $e');
+    }
   }
 
   static Future<void> showColorFlash(BuildContext context) async {
@@ -32,7 +41,7 @@ class TriggerService {
       builder: (context) => GestureDetector(
         onTap: () => Navigator.pop(context),
         child: Container(
-          color: Colors.red.withValues(alpha: 0.9),
+          color: Colors.red.withOpacity(0.9),
           child: const Center(
             child: Text(
               'FLASH!',
