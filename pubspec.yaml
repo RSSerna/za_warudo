@@ -6,16 +6,13 @@ publish_to: "none"
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: ^3.6.1
 
 dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.2
   provider: ^6.0.0
-  flutter_local_notifications: ^9.0.0
-  vibrate: ^1.0.0
-  flashlight: ^0.1.0
 
 dev_dependencies:
   flutter_test:
