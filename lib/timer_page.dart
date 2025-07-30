@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:za_warudo/helpers.dart';
+import 'package:za_warudo/trigger_service.dart';
 
 class TimerPage extends StatefulWidget {
   const TimerPage({super.key});
@@ -20,12 +21,18 @@ class _TimerPageState extends State<TimerPage> {
     setState(() {
       isRunning = true;
     });
-    Future.delayed(timerDuration, () {
+    Future.delayed(timerDuration, () async {
       setState(() {
         isRunning = false;
       });
+      await TriggerService.triggerAll(
+        context: context,
+        sound: sound,
+        vibration: vibration,
+        colorFlash: colorFlash,
+        flashlight: flashlight,
+      );
       _showTimerDialog();
-      // Here you will later trigger sound, vibration, etc.
     });
   }
 

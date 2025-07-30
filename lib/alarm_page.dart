@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:za_warudo/trigger_service.dart';
 
 class AlarmPage extends StatefulWidget {
   const AlarmPage({super.key});
@@ -32,12 +33,18 @@ class _AlarmPageState extends State<AlarmPage> {
         ? alarmDateTime.difference(now)
         : alarmDateTime.add(const Duration(days: 1)).difference(now);
 
-    Future.delayed(waitDuration, () {
+    Future.delayed(waitDuration, () async {
       setState(() {
         isAlarmSet = false;
       });
+      await TriggerService.triggerAll(
+        context: context,
+        sound: sound,
+        vibration: vibration,
+        colorFlash: colorFlash,
+        flashlight: flashlight,
+      );
       _showAlarmDialog();
-      // Here you will later trigger sound, vibration, etc.
     });
   }
 
