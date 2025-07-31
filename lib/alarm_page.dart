@@ -15,6 +15,7 @@ class _AlarmPageState extends State<AlarmPage> {
   bool flashlight = false;
   TimeOfDay? alarmTime;
   bool isAlarmSet = false;
+  bool manualStop = false;
 
   void setAlarm() {
     if (alarmTime == null) return;
@@ -43,6 +44,7 @@ class _AlarmPageState extends State<AlarmPage> {
         vibration: vibration,
         colorFlash: colorFlash,
         flashlight: flashlight,
+        manualStop: manualStop,
       );
       _showAlarmDialog();
     });
@@ -108,6 +110,11 @@ class _AlarmPageState extends State<AlarmPage> {
             title: const Text('Flashlight'),
             value: flashlight,
             onChanged: (val) => setState(() => flashlight = val),
+          ),
+          SwitchListTile(
+            title: const Text('Manual Stop (show Stop button)'),
+            value: manualStop,
+            onChanged: (val) => setState(() => manualStop = val),
           ),
           ElevatedButton(
             onPressed: isAlarmSet ? null : setAlarm,

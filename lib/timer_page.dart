@@ -16,6 +16,7 @@ class _TimerPageState extends State<TimerPage> {
   bool flashlight = false;
   Duration timerDuration = const Duration(seconds: 10);
   bool isRunning = false;
+  bool manualStop = false;
 
   void startTimer() {
     setState(() {
@@ -31,6 +32,7 @@ class _TimerPageState extends State<TimerPage> {
         vibration: vibration,
         colorFlash: colorFlash,
         flashlight: flashlight,
+        manualStop: manualStop,
       );
       _showTimerDialog();
     });
@@ -95,6 +97,11 @@ class _TimerPageState extends State<TimerPage> {
             title: const Text('Flashlight'),
             value: flashlight,
             onChanged: (val) => setState(() => flashlight = val),
+          ),
+          SwitchListTile(
+            title: const Text('Manual Stop (show Stop button)'),
+            value: manualStop,
+            onChanged: (val) => setState(() => manualStop = val),
           ),
           ElevatedButton(
             onPressed: isRunning ? null : startTimer,
