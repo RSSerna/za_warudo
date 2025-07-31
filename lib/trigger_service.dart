@@ -39,7 +39,7 @@ class TriggerService {
 
   static Future<void> vibrateDevice({bool repeat = false}) async {
     try {
-      if (await Vibration.hasVibrator() ?? false) {
+      if (await Vibration.hasVibrator()) {
         _isVibrating = true;
         if (repeat) {
           while (_isVibrating) {
