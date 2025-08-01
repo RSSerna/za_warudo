@@ -133,9 +133,18 @@ class _TimerPageState extends State<TimerPage> {
                     provider.setOption(key, value);
                   },
                 ),
-                ElevatedButton(
-                  onPressed: provider.isRunning ? null : startTimer,
-                  child: const Text('Start Timer'),
+                Semantics(
+                  label: 'Start Timer Button',
+                  button: true,
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: provider.isRunning ? null : startTimer,
+                      child: const Text('Start Timer',
+                          style: TextStyle(fontSize: 20)),
+                    ),
+                  ),
                 ),
               ] else ...[
                 const SizedBox(height: 32),
@@ -162,19 +171,46 @@ class _TimerPageState extends State<TimerPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     if (!provider.isPaused)
-                      ElevatedButton(
-                        onPressed: pauseTimer,
-                        child: const Text('Pause'),
+                      Semantics(
+                        label: 'Pause Timer Button',
+                        button: true,
+                        child: SizedBox(
+                          width: 140,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: pauseTimer,
+                            child: const Text('Pause',
+                                style: TextStyle(fontSize: 20)),
+                          ),
+                        ),
                       ),
                     if (provider.isPaused)
-                      ElevatedButton(
-                        onPressed: resumeTimer,
-                        child: const Text('Resume'),
+                      Semantics(
+                        label: 'Resume Timer Button',
+                        button: true,
+                        child: SizedBox(
+                          width: 140,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: resumeTimer,
+                            child: const Text('Resume',
+                                style: TextStyle(fontSize: 20)),
+                          ),
+                        ),
                       ),
                     const SizedBox(width: 16),
-                    ElevatedButton(
-                      onPressed: cancelTimer,
-                      child: const Text('Cancel'),
+                    Semantics(
+                      label: 'Cancel Timer Button',
+                      button: true,
+                      child: SizedBox(
+                        width: 140,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: cancelTimer,
+                          child: const Text('Cancel',
+                              style: TextStyle(fontSize: 20)),
+                        ),
+                      ),
                     ),
                   ],
                 ),

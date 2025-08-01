@@ -94,11 +94,23 @@ class _AlarmPageState extends State<AlarmPage> {
                   provider.setOption(key, value);
                 },
               ),
-              ElevatedButton(
-                onPressed: provider.isAlarmSet ? null : setAlarm,
-                child: provider.isAlarmSet
-                    ? const Text('Alarm Set!')
-                    : const Text('Set Alarm'),
+              Semantics(
+                label: provider.isAlarmSet
+                    ? 'Alarm Set Button'
+                    : 'Set Alarm Button',
+                button: true,
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: provider.isAlarmSet ? null : setAlarm,
+                    child: provider.isAlarmSet
+                        ? const Text('Alarm Set!',
+                            style: TextStyle(fontSize: 20))
+                        : const Text('Set Alarm',
+                            style: TextStyle(fontSize: 20)),
+                  ),
+                ),
               ),
             ],
           ),
