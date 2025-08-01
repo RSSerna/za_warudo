@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:za_warudo/pref_keys.dart';
 
 class SettingsProvider extends ChangeNotifier {
   Locale? _locale;
@@ -13,12 +14,12 @@ class SettingsProvider extends ChangeNotifier {
     _locale = locale;
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('locale', locale.languageCode);
+    await prefs.setString(PrefKeys.locale, locale.languageCode);
   }
 
   Future<void> _loadLocale() async {
     final prefs = await SharedPreferences.getInstance();
-    final code = prefs.getString('locale');
+    final code = prefs.getString(PrefKeys.locale);
     if (code != null) {
       _locale = Locale(code);
       notifyListeners();

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:za_warudo/pref_keys.dart';
 
 class TimerProvider extends ChangeNotifier {
   bool sound = false;
@@ -62,22 +63,22 @@ class TimerProvider extends ChangeNotifier {
 
   Future<void> _savePrefs() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setBool('timer_sound', sound);
-    prefs.setBool('timer_vibration', vibration);
-    prefs.setBool('timer_colorFlash', colorFlash);
-    prefs.setBool('timer_flashlight', flashlight);
-    prefs.setBool('timer_manualStop', manualStop);
-    prefs.setInt('timer_duration', timerDuration.inSeconds);
+    prefs.setBool(PrefKeys.timerSound, sound);
+    prefs.setBool(PrefKeys.timerVibration, vibration);
+    prefs.setBool(PrefKeys.timerColorFlash, colorFlash);
+    prefs.setBool(PrefKeys.timerFlashlight, flashlight);
+    prefs.setBool(PrefKeys.timerManualStop, manualStop);
+    prefs.setInt(PrefKeys.timerDuration, timerDuration.inSeconds);
   }
 
   Future<void> _loadPrefs() async {
     final prefs = await SharedPreferences.getInstance();
-    sound = prefs.getBool('timer_sound') ?? false;
-    vibration = prefs.getBool('timer_vibration') ?? false;
-    colorFlash = prefs.getBool('timer_colorFlash') ?? false;
-    flashlight = prefs.getBool('timer_flashlight') ?? false;
-    manualStop = prefs.getBool('timer_manualStop') ?? false;
-    final seconds = prefs.getInt('timer_duration');
+    sound = prefs.getBool(PrefKeys.timerSound) ?? false;
+    vibration = prefs.getBool(PrefKeys.timerVibration) ?? false;
+    colorFlash = prefs.getBool(PrefKeys.timerColorFlash) ?? false;
+    flashlight = prefs.getBool(PrefKeys.timerFlashlight) ?? false;
+    manualStop = prefs.getBool(PrefKeys.timerManualStop) ?? false;
+    final seconds = prefs.getInt(PrefKeys.timerDuration);
     if (seconds != null) {
       timerDuration = Duration(seconds: seconds);
     }

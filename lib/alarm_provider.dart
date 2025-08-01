@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:za_warudo/pref_keys.dart';
 
 class AlarmProvider extends ChangeNotifier {
   bool sound = false;
@@ -50,26 +51,26 @@ class AlarmProvider extends ChangeNotifier {
 
   Future<void> _savePrefs() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setBool('alarm_sound', sound);
-    prefs.setBool('alarm_vibration', vibration);
-    prefs.setBool('alarm_colorFlash', colorFlash);
-    prefs.setBool('alarm_flashlight', flashlight);
-    prefs.setBool('alarm_manualStop', manualStop);
+    prefs.setBool(PrefKeys.alarmSound, sound);
+    prefs.setBool(PrefKeys.alarmVibration, vibration);
+    prefs.setBool(PrefKeys.alarmColorFlash, colorFlash);
+    prefs.setBool(PrefKeys.alarmFlashlight, flashlight);
+    prefs.setBool(PrefKeys.alarmManualStop, manualStop);
     if (alarmTime != null) {
-      prefs.setInt('alarm_hour', alarmTime!.hour);
-      prefs.setInt('alarm_minute', alarmTime!.minute);
+      prefs.setInt(PrefKeys.alarmHour, alarmTime!.hour);
+      prefs.setInt(PrefKeys.alarmMinute, alarmTime!.minute);
     }
   }
 
   Future<void> _loadPrefs() async {
     final prefs = await SharedPreferences.getInstance();
-    sound = prefs.getBool('alarm_sound') ?? false;
-    vibration = prefs.getBool('alarm_vibration') ?? false;
-    colorFlash = prefs.getBool('alarm_colorFlash') ?? false;
-    flashlight = prefs.getBool('alarm_flashlight') ?? false;
-    manualStop = prefs.getBool('alarm_manualStop') ?? false;
-    final hour = prefs.getInt('alarm_hour');
-    final minute = prefs.getInt('alarm_minute');
+    sound = prefs.getBool(PrefKeys.alarmSound) ?? false;
+    vibration = prefs.getBool(PrefKeys.alarmVibration) ?? false;
+    colorFlash = prefs.getBool(PrefKeys.alarmColorFlash) ?? false;
+    flashlight = prefs.getBool(PrefKeys.alarmFlashlight) ?? false;
+    manualStop = prefs.getBool(PrefKeys.alarmManualStop) ?? false;
+    final hour = prefs.getInt(PrefKeys.alarmHour);
+    final minute = prefs.getInt(PrefKeys.alarmMinute);
     if (hour != null && minute != null) {
       alarmTime = TimeOfDay(hour: hour, minute: minute);
     }
