@@ -3,12 +3,66 @@ import 'package:flutter/material.dart';
 import 'package:torch_light/torch_light.dart';
 import 'package:vibration/vibration.dart';
 
+class ManualStopDialog extends StatefulWidget {
+  final bool colorFlash;
+  const ManualStopDialog({super.key, required this.colorFlash});
+
+  @override
+  State<ManualStopDialog> createState() => _ManualStopDialogState();
+}
+
+class _ManualStopDialogState extends State<ManualStopDialog> {
+  bool _flashOn = true;
+  @override
+  void initState() {
+    super.initState();
+    if (widget.colorFlash) {
+      _startFlashing();
+    }
+  }
+
+  void _startFlashing() async {
+    while (mounted && widget.colorFlash) {
+      setState(() => _flashOn = !_flashOn);
+      await Future.delayed(const Duration(milliseconds: 400));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: widget.colorFlash && _flashOn
+          ? const Color(0xE6FF0000)
+          : Colors.transparent,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'TRIGGERING...',
+              style: TextStyle(
+                  fontSize: 36,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Stop'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class TriggerService {
   static AudioPlayer? _player;
   static bool _isVibrating = false;
   static bool _isFlashing = false;
 
-  static Future<void> playSound({bool loop = false}) async {
+  static Future<void> playSound({bool loop = true}) async {
     try {
       _player ??= AudioPlayer();
       await _player!.stop();
@@ -37,7 +91,7 @@ class TriggerService {
     }
   }
 
-  static Future<void> vibrateDevice({bool repeat = false}) async {
+  static Future<void> vibrateDevice({bool repeat = true}) async {
     try {
       if (await Vibration.hasVibrator()) {
         _isVibrating = true;
@@ -60,7 +114,7 @@ class TriggerService {
     Vibration.cancel();
   }
 
-  static Future<void> flashLight({bool repeat = false}) async {
+  static Future<void> flashLight({bool repeat = true}) async {
     try {
       _isFlashing = true;
       if (repeat) {
@@ -85,52 +139,6 @@ class TriggerService {
     TorchLight.disableTorch();
   }
 
-  static Future<void> showColorFlash(BuildContext context,
-      {bool manualStop = false}) async {
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
-          return GestureDetector(
-            onTap: manualStop
-                ? null
-                : () {
-                    Navigator.pop(context);
-                  },
-            child: Container(
-              color: const Color(0xE6FF0000), // 0xE6 = 90% alpha
-              child: Center(
-                child: manualStop
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'FLASH!',
-                            style: TextStyle(fontSize: 48, color: Colors.white),
-                          ),
-                          const SizedBox(height: 32),
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: const Text('Stop'),
-                          ),
-                        ],
-                      )
-                    : const Text(
-                        'FLASH!',
-                        style: TextStyle(fontSize: 48, color: Colors.white),
-                      ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-    return;
-  }
-
   static Future<void> triggerAll({
     required BuildContext context,
     required bool sound,
@@ -141,16 +149,17 @@ class TriggerService {
   }) async {
     // Start all triggers
     List<Future> futures = [];
-    if (sound) futures.add(playSound(loop: manualStop));
-    if (vibration) futures.add(vibrateDevice(repeat: manualStop));
+    if (sound) futures.add(playSound());
+    if (vibration) futures.add(vibrateDevice());
     if (flashlight) futures.add(flashLight(repeat: manualStop));
-    if (colorFlash)
-      futures.add(showColorFlash(context, manualStop: manualStop));
 
     if (manualStop) {
-      // Wait for colorFlash dialog to close (user presses Stop)
-      await Future.wait(futures);
-      // Stop all triggers
+      // Show a fullscreen dialog with Stop button and color flash if enabled
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => ManualStopDialog(colorFlash: colorFlash),
+      );
       await stopAll();
     } else {
       // Auto-stop after 5 seconds
