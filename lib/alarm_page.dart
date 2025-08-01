@@ -118,9 +118,7 @@ class _AlarmPageState extends State<AlarmPage> {
                 colorFlash: provider.colorFlash,
                 flashlight: provider.flashlight,
                 manualStop: provider.manualStop,
-                onChanged: (String key, bool value) {
-                  provider.setOption(key, value);
-                },
+                onChanged: (key, value) => provider.setOption(key, value),
               ),
               Semantics(
                 label: provider.isAlarmSet ? loc.alarmSet : loc.setAlarm,

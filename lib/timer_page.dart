@@ -160,9 +160,7 @@ class _TimerPageState extends State<TimerPage> {
                   colorFlash: provider.colorFlash,
                   flashlight: provider.flashlight,
                   manualStop: provider.manualStop,
-                  onChanged: (String key, bool value) {
-                    provider.setOption(key, value);
-                  },
+                  onChanged: (key, value) => provider.setOption(key, value),
                 ),
                 Semantics(
                   label: loc.startTimer,

@@ -6,7 +6,7 @@ class TriggerSwitches extends StatelessWidget {
   final bool colorFlash;
   final bool flashlight;
   final bool manualStop;
-  final void Function(String, bool) onChanged;
+  final Future<void> Function(String, bool) onChanged;
 
   const TriggerSwitches({
     super.key,
