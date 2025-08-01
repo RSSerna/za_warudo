@@ -17,6 +17,10 @@ class TimerPage extends StatefulWidget {
 }
 
 class _TimerPageState extends State<TimerPage> {
+  void _resetSound(TimerProvider provider) {
+    provider.setTimerSoundPath(null);
+  }
+
   Future<void> _pickSoundFile(TimerProvider provider) async {
     FilePickerResult? result =
         await FilePicker.platform.pickFiles(type: FileType.audio);
@@ -66,6 +70,7 @@ class _TimerPageState extends State<TimerPage> {
         colorFlash: provider.colorFlash,
         flashlight: provider.flashlight,
         manualStop: provider.manualStop,
+        soundPath: provider.timerSoundPath,
       );
       _showTimerDialog();
     } catch (e) {
@@ -169,11 +174,24 @@ class _TimerPageState extends State<TimerPage> {
                       ? provider.timerSoundPath!.split(RegExp(r'[\\/]')).last
                       : 'Default',
                 ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.music_note),
-                  onPressed: provider.isRunning
-                      ? null
-                      : () => _pickSoundFile(provider),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.music_note),
+                      onPressed: provider.isRunning
+                          ? null
+                          : () => _pickSoundFile(provider),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.refresh),
+                      tooltip: 'Reset to default',
+                      onPressed:
+                          provider.isRunning || provider.timerSoundPath == null
+                              ? null
+                              : () => _resetSound(provider),
+                    ),
+                  ],
                 ),
               ),
               if (!provider.isRunning) ...[

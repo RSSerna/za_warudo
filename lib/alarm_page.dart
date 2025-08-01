@@ -14,6 +14,10 @@ class AlarmPage extends StatefulWidget {
 }
 
 class _AlarmPageState extends State<AlarmPage> {
+  void _resetSound(AlarmProvider provider) {
+    provider.setAlarmSoundPath(null);
+  }
+
   Future<void> _pickSoundFile(AlarmProvider provider) async {
     FilePickerResult? result =
         await FilePicker.platform.pickFiles(type: FileType.audio);
@@ -52,6 +56,7 @@ class _AlarmPageState extends State<AlarmPage> {
           colorFlash: provider.colorFlash,
           flashlight: provider.flashlight,
           manualStop: provider.manualStop,
+          soundPath: provider.alarmSoundPath,
         );
         _showAlarmDialog();
       } catch (e) {
@@ -128,9 +133,21 @@ class _AlarmPageState extends State<AlarmPage> {
                       ? provider.alarmSoundPath!.split(RegExp(r'[\\/]')).last
                       : 'Default',
                 ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.music_note),
-                  onPressed: () => _pickSoundFile(provider),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.music_note),
+                      onPressed: () => _pickSoundFile(provider),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.refresh),
+                      tooltip: 'Reset to default',
+                      onPressed: provider.alarmSoundPath == null
+                          ? null
+                          : () => _resetSound(provider),
+                    ),
+                  ],
                 ),
               ),
               TriggerSwitches(
