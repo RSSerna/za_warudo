@@ -14,16 +14,26 @@ class _TimerPageState extends State<TimerPage> {
   bool vibration = false;
   bool colorFlash = false;
   bool flashlight = false;
-  Duration timerDuration = const Duration(seconds: 10);
   bool isRunning = false;
   bool manualStop = false;
+  bool isPaused = false;
+  Duration timerDuration = const Duration(seconds: 10);
 
   Duration remaining = Duration.zero;
   void startTimer() {
+    if (timerDuration.inSeconds == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a non-zero duration.')),
+      );
+      return;
+    }
     setState(() {
       isRunning = true;
+      isPaused = false;
       remaining = timerDuration;
     });
+    // Feedback: vibrate or play sound
+    TriggerService.vibrateDevice(repeat: false);
     _tick();
   }
 
@@ -45,9 +55,11 @@ class _TimerPageState extends State<TimerPage> {
     }
     Future.delayed(const Duration(seconds: 1), () {
       if (!isRunning) return;
-      setState(() {
-        remaining = remaining - const Duration(seconds: 1);
-      });
+      if (!isPaused) {
+        setState(() {
+          remaining = remaining - const Duration(seconds: 1);
+        });
+      }
       _tick();
     });
   }
@@ -66,6 +78,32 @@ class _TimerPageState extends State<TimerPage> {
         ],
       ),
     );
+  }
+
+  void pauseTimer() {
+    setState(() {
+      isPaused = true;
+    });
+    // Feedback: vibrate or play sound
+    TriggerService.vibrateDevice(repeat: false);
+  }
+
+  void resumeTimer() {
+    setState(() {
+      isPaused = false;
+    });
+    // Feedback: vibrate or play sound
+    TriggerService.vibrateDevice(repeat: false);
+  }
+
+  void cancelTimer() {
+    setState(() {
+      isRunning = false;
+      isPaused = false;
+      remaining = timerDuration;
+    });
+    // Feedback: vibrate or play sound
+    TriggerService.vibrateDevice(repeat: false);
   }
 
   @override
@@ -134,6 +172,34 @@ class _TimerPageState extends State<TimerPage> {
             Text(
               _formatDuration(remaining),
               style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            LinearProgressIndicator(
+              value: timerDuration.inSeconds > 0
+                  ? remaining.inSeconds / timerDuration.inSeconds
+                  : 0,
+              minHeight: 8,
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (!isPaused)
+                  ElevatedButton(
+                    onPressed: pauseTimer,
+                    child: const Text('Pause'),
+                  ),
+                if (isPaused)
+                  ElevatedButton(
+                    onPressed: resumeTimer,
+                    child: const Text('Resume'),
+                  ),
+                const SizedBox(width: 16),
+                ElevatedButton(
+                  onPressed: cancelTimer,
+                  child: const Text('Cancel'),
+                ),
+              ],
             ),
           ],
         ],
