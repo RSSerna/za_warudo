@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:za_warudo/alarm_provider.dart';
 import 'package:za_warudo/trigger_service.dart';
 import 'package:za_warudo/trigger_switches.dart';
 
@@ -10,42 +12,31 @@ class AlarmPage extends StatefulWidget {
 }
 
 class _AlarmPageState extends State<AlarmPage> {
-  bool sound = false;
-  bool vibration = false;
-  bool colorFlash = false;
-  bool flashlight = false;
-  TimeOfDay? alarmTime;
-  bool isAlarmSet = false;
-  bool manualStop = false;
-
   void setAlarm() {
-    if (alarmTime == null) return;
-    setState(() {
-      isAlarmSet = true;
-    });
+    final provider = Provider.of<AlarmProvider>(context, listen: false);
+    if (provider.alarmTime == null) return;
+    provider.setAlarmSet(true);
     final now = DateTime.now();
     final alarmDateTime = DateTime(
       now.year,
       now.month,
       now.day,
-      alarmTime!.hour,
-      alarmTime!.minute,
+      provider.alarmTime!.hour,
+      provider.alarmTime!.minute,
     );
     Duration waitDuration = alarmDateTime.isAfter(now)
         ? alarmDateTime.difference(now)
         : alarmDateTime.add(const Duration(days: 1)).difference(now);
 
     Future.delayed(waitDuration, () async {
-      setState(() {
-        isAlarmSet = false;
-      });
+      provider.setAlarmSet(false);
       await TriggerService.triggerAll(
         context: context,
-        sound: sound,
-        vibration: vibration,
-        colorFlash: colorFlash,
-        flashlight: flashlight,
-        manualStop: manualStop,
+        sound: provider.sound,
+        vibration: provider.vibration,
+        colorFlash: provider.colorFlash,
+        flashlight: provider.flashlight,
+        manualStop: provider.manualStop,
       );
       _showAlarmDialog();
     });
@@ -69,64 +60,50 @@ class _AlarmPageState extends State<AlarmPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Alarm')),
-      body: Column(
-        children: [
-          ListTile(
-            title: const Text('Alarm Time'),
-            subtitle: Text(
-                alarmTime == null ? 'Not set' : alarmTime!.format(context)),
-            trailing: IconButton(
-              icon: const Icon(Icons.access_time),
-              onPressed: () async {
-                TimeOfDay? picked = await showTimePicker(
-                  context: context,
-                  initialTime: TimeOfDay.now(),
-                );
-                if (picked != null) {
-                  setState(() {
-                    alarmTime = picked;
-                  });
-                }
-              },
-            ),
+    return Consumer<AlarmProvider>(
+      builder: (context, provider, child) {
+        return Scaffold(
+          appBar: AppBar(title: const Text('Alarm')),
+          body: Column(
+            children: [
+              ListTile(
+                title: const Text('Alarm Time'),
+                subtitle: Text(provider.alarmTime == null
+                    ? 'Not set'
+                    : provider.alarmTime!.format(context)),
+                trailing: IconButton(
+                  icon: const Icon(Icons.access_time),
+                  onPressed: () async {
+                    TimeOfDay? picked = await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay.now(),
+                    );
+                    if (picked != null) {
+                      provider.setAlarmTime(picked);
+                    }
+                  },
+                ),
+              ),
+              TriggerSwitches(
+                sound: provider.sound,
+                vibration: provider.vibration,
+                colorFlash: provider.colorFlash,
+                flashlight: provider.flashlight,
+                manualStop: provider.manualStop,
+                onChanged: (String key, bool value) {
+                  provider.setOption(key, value);
+                },
+              ),
+              ElevatedButton(
+                onPressed: provider.isAlarmSet ? null : setAlarm,
+                child: provider.isAlarmSet
+                    ? const Text('Alarm Set!')
+                    : const Text('Set Alarm'),
+              ),
+            ],
           ),
-          TriggerSwitches(
-            sound: sound,
-            vibration: vibration,
-            colorFlash: colorFlash,
-            flashlight: flashlight,
-            manualStop: manualStop,
-            onChanged: (String key, bool value) {
-              setState(() {
-                switch (key) {
-                  case 'sound':
-                    sound = value;
-                    break;
-                  case 'vibration':
-                    vibration = value;
-                    break;
-                  case 'colorFlash':
-                    colorFlash = value;
-                    break;
-                  case 'flashlight':
-                    flashlight = value;
-                    break;
-                  case 'manualStop':
-                    manualStop = value;
-                    break;
-                }
-              });
-            },
-          ),
-          ElevatedButton(
-            onPressed: isAlarmSet ? null : setAlarm,
-            child:
-                isAlarmSet ? const Text('Alarm Set!') : const Text('Set Alarm'),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

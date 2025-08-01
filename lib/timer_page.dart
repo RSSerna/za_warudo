@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:za_warudo/helpers.dart';
+import 'package:za_warudo/timer_provider.dart';
 import 'package:za_warudo/trigger_service.dart';
 import 'package:za_warudo/trigger_switches.dart';
 
@@ -13,52 +15,39 @@ class TimerPage extends StatefulWidget {
 }
 
 class _TimerPageState extends State<TimerPage> {
-  bool sound = false;
-  bool vibration = false;
-  bool colorFlash = false;
-  bool flashlight = false;
-  bool isRunning = false;
-  bool manualStop = false;
-  bool isPaused = false;
-  Duration timerDuration = const Duration(seconds: 10);
-  Duration remaining = Duration.zero;
   Timer? _timer;
 
   void startTimer() {
-    if (timerDuration.inSeconds == 0) {
+    final provider = Provider.of<TimerProvider>(context, listen: false);
+    if (provider.timerDuration.inSeconds == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a non-zero duration.')),
       );
       return;
     }
-    setState(() {
-      isRunning = true;
-      isPaused = false;
-      remaining = timerDuration;
-    });
+    provider.setTimerRunning(true);
+    provider.setTimerPaused(false);
+    provider.setTimerRemaining(provider.timerDuration);
     TriggerService.vibrateDevice(repeat: false);
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!isRunning) {
+      if (!provider.isRunning) {
         timer.cancel();
         return;
       }
-      if (!isPaused) {
-        setState(() {
-          remaining = remaining - const Duration(seconds: 1);
-        });
+      if (!provider.isPaused) {
+        provider
+            .setTimerRemaining(provider.remaining - const Duration(seconds: 1));
       }
-      if (remaining.inSeconds <= 0) {
+      if (provider.remaining.inSeconds <= 0) {
         timer.cancel();
-        setState(() {
-          isRunning = false;
-        });
+        provider.setTimerRunning(false);
         TriggerService.triggerAll(
           context: context,
-          sound: sound,
-          vibration: vibration,
-          colorFlash: colorFlash,
-          flashlight: flashlight,
-          manualStop: manualStop,
+          sound: provider.sound,
+          vibration: provider.vibration,
+          colorFlash: provider.colorFlash,
+          flashlight: provider.flashlight,
+          manualStop: provider.manualStop,
         ).then((_) => _showTimerDialog());
       }
     });
@@ -81,25 +70,22 @@ class _TimerPageState extends State<TimerPage> {
   }
 
   void pauseTimer() {
-    setState(() {
-      isPaused = true;
-    });
+    final provider = Provider.of<TimerProvider>(context, listen: false);
+    provider.setTimerPaused(true);
     TriggerService.vibrateDevice(repeat: false);
   }
 
   void resumeTimer() {
-    setState(() {
-      isPaused = false;
-    });
+    final provider = Provider.of<TimerProvider>(context, listen: false);
+    provider.setTimerPaused(false);
     TriggerService.vibrateDevice(repeat: false);
   }
 
   void cancelTimer() {
-    setState(() {
-      isRunning = false;
-      isPaused = false;
-      remaining = timerDuration;
-    });
+    final provider = Provider.of<TimerProvider>(context, listen: false);
+    provider.setTimerRunning(false);
+    provider.setTimerPaused(false);
+    provider.setTimerRemaining(provider.timerDuration);
     _timer?.cancel();
     TriggerService.vibrateDevice(repeat: false);
   }
@@ -112,105 +98,91 @@ class _TimerPageState extends State<TimerPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Timer')),
-      body: Column(
-        children: [
-          ListTile(
-            title: const Text('Timer Duration'),
-            subtitle: Text(_formatDuration(timerDuration)),
-            trailing: IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: isRunning
-                  ? null
-                  : () async {
-                      Duration? picked = await showDurationPicker(
-                        context: context,
-                        initialTime: timerDuration,
-                      );
-                      if (picked != null) {
-                        setState(() {
-                          timerDuration = picked;
-                        });
-                      }
-                    },
-            ),
-          ),
-          if (!isRunning) ...[
-            TriggerSwitches(
-              sound: sound,
-              vibration: vibration,
-              colorFlash: colorFlash,
-              flashlight: flashlight,
-              manualStop: manualStop,
-              onChanged: (String key, bool value) {
-                setState(() {
-                  switch (key) {
-                    case 'sound':
-                      sound = value;
-                      break;
-                    case 'vibration':
-                      vibration = value;
-                      break;
-                    case 'colorFlash':
-                      colorFlash = value;
-                      break;
-                    case 'flashlight':
-                      flashlight = value;
-                      break;
-                    case 'manualStop':
-                      manualStop = value;
-                      break;
-                  }
-                });
-              },
-            ),
-            ElevatedButton(
-              onPressed: isRunning ? null : startTimer,
-              child: const Text('Start Timer'),
-            ),
-          ] else ...[
-            const SizedBox(height: 32),
-            Text(
-              'Time Remaining',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _formatDuration(remaining),
-              style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            LinearProgressIndicator(
-              value: timerDuration.inSeconds > 0
-                  ? remaining.inSeconds / timerDuration.inSeconds
-                  : 0,
-              minHeight: 8,
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (!isPaused)
-                  ElevatedButton(
-                    onPressed: pauseTimer,
-                    child: const Text('Pause'),
-                  ),
-                if (isPaused)
-                  ElevatedButton(
-                    onPressed: resumeTimer,
-                    child: const Text('Resume'),
-                  ),
-                const SizedBox(width: 16),
+    return Consumer<TimerProvider>(
+      builder: (context, provider, child) {
+        return Scaffold(
+          appBar: AppBar(title: const Text('Timer')),
+          body: Column(
+            children: [
+              ListTile(
+                title: const Text('Timer Duration'),
+                subtitle: Text(_formatDuration(provider.timerDuration)),
+                trailing: IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: provider.isRunning
+                      ? null
+                      : () async {
+                          Duration? picked = await showDurationPicker(
+                            context: context,
+                            initialTime: provider.timerDuration,
+                          );
+                          if (picked != null) {
+                            provider.setTimerDuration(picked);
+                          }
+                        },
+                ),
+              ),
+              if (!provider.isRunning) ...[
+                TriggerSwitches(
+                  sound: provider.sound,
+                  vibration: provider.vibration,
+                  colorFlash: provider.colorFlash,
+                  flashlight: provider.flashlight,
+                  manualStop: provider.manualStop,
+                  onChanged: (String key, bool value) {
+                    provider.setOption(key, value);
+                  },
+                ),
                 ElevatedButton(
-                  onPressed: cancelTimer,
-                  child: const Text('Cancel'),
+                  onPressed: provider.isRunning ? null : startTimer,
+                  child: const Text('Start Timer'),
+                ),
+              ] else ...[
+                const SizedBox(height: 32),
+                Text(
+                  'Time Remaining',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  _formatDuration(provider.remaining),
+                  style: const TextStyle(
+                      fontSize: 48, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                LinearProgressIndicator(
+                  value: provider.timerDuration.inSeconds > 0
+                      ? provider.remaining.inSeconds /
+                          provider.timerDuration.inSeconds
+                      : 0,
+                  minHeight: 8,
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (!provider.isPaused)
+                      ElevatedButton(
+                        onPressed: pauseTimer,
+                        child: const Text('Pause'),
+                      ),
+                    if (provider.isPaused)
+                      ElevatedButton(
+                        onPressed: resumeTimer,
+                        child: const Text('Resume'),
+                      ),
+                    const SizedBox(width: 16),
+                    ElevatedButton(
+                      onPressed: cancelTimer,
+                      child: const Text('Cancel'),
+                    ),
+                  ],
                 ),
               ],
-            ),
-          ],
-        ],
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 

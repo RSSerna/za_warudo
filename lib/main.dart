@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:za_warudo/alarm_page.dart';
+import 'package:za_warudo/alarm_provider.dart';
 import 'package:za_warudo/timer_page.dart';
+import 'package:za_warudo/timer_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -38,7 +41,12 @@ class HomePage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const TimerPage()),
+                  MaterialPageRoute(
+                    builder: (context) => ChangeNotifierProvider(
+                      create: (_) => TimerProvider(),
+                      child: const TimerPage(),
+                    ),
+                  ),
                 );
               },
             ),
@@ -47,7 +55,12 @@ class HomePage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const AlarmPage()),
+                  MaterialPageRoute(
+                    builder: (context) => ChangeNotifierProvider(
+                      create: (_) => AlarmProvider(),
+                      child: const AlarmPage(),
+                    ),
+                  ),
                 );
               },
             ),
