@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:za_warudo/helpers.dart';
 import 'package:za_warudo/timer_provider.dart';
@@ -19,9 +20,10 @@ class _TimerPageState extends State<TimerPage> {
 
   void startTimer() {
     final provider = Provider.of<TimerProvider>(context, listen: false);
+    final loc = AppLocalizations.of(context)!;
     if (provider.timerDuration.inSeconds == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a non-zero duration.')),
+        SnackBar(content: Text(loc.pleaseSelectNonZeroDuration)),
       );
       return;
     }
@@ -58,20 +60,22 @@ class _TimerPageState extends State<TimerPage> {
       );
       _showTimerDialog();
     } catch (e) {
-      _showErrorDialog('Failed to trigger timer actions:\n\n${e.toString()}');
+      final loc = AppLocalizations.of(context)!;
+      _showErrorDialog(loc.failedToTriggerTimer(e.toString()));
     }
   }
 
   void _showErrorDialog(String message) {
+    final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Error'),
+        title: Text(loc.error),
         content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: Text(loc.ok),
           ),
         ],
       ),
@@ -79,15 +83,16 @@ class _TimerPageState extends State<TimerPage> {
   }
 
   void _showTimerDialog() {
+    final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Timer Done!'),
-        content: const Text('Your timer has finished.'),
+        title: Text(loc.timerDone),
+        content: Text(loc.timerFinished),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: Text(loc.ok),
           ),
         ],
       ),
@@ -125,12 +130,13 @@ class _TimerPageState extends State<TimerPage> {
   Widget build(BuildContext context) {
     return Consumer<TimerProvider>(
       builder: (context, provider, child) {
+        final loc = AppLocalizations.of(context)!;
         return Scaffold(
-          appBar: AppBar(title: const Text('Timer')),
+          appBar: AppBar(title: Text(loc.timer)),
           body: Column(
             children: [
               ListTile(
-                title: const Text('Timer Duration'),
+                title: Text(loc.timerDuration),
                 subtitle: Text(_formatDuration(provider.timerDuration)),
                 trailing: IconButton(
                   icon: const Icon(Icons.edit),
@@ -159,23 +165,24 @@ class _TimerPageState extends State<TimerPage> {
                   },
                 ),
                 Semantics(
-                  label: 'Start Timer Button',
+                  label: loc.startTimer,
                   button: true,
                   child: SizedBox(
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
                       onPressed: provider.isRunning ? null : startTimer,
-                      child: const Text('Start Timer',
-                          style: TextStyle(fontSize: 20)),
+                      child: Text(loc.startTimer,
+                          style: const TextStyle(fontSize: 20)),
                     ),
                   ),
                 ),
               ] else ...[
                 const SizedBox(height: 32),
                 Text(
-                  'Time Remaining',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  loc.timeRemaining,
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -197,43 +204,43 @@ class _TimerPageState extends State<TimerPage> {
                   children: [
                     if (!provider.isPaused)
                       Semantics(
-                        label: 'Pause Timer Button',
+                        label: loc.pause,
                         button: true,
                         child: SizedBox(
                           width: 140,
                           height: 56,
                           child: ElevatedButton(
                             onPressed: pauseTimer,
-                            child: const Text('Pause',
-                                style: TextStyle(fontSize: 20)),
+                            child: Text(loc.pause,
+                                style: const TextStyle(fontSize: 20)),
                           ),
                         ),
                       ),
                     if (provider.isPaused)
                       Semantics(
-                        label: 'Resume Timer Button',
+                        label: loc.resume,
                         button: true,
                         child: SizedBox(
                           width: 140,
                           height: 56,
                           child: ElevatedButton(
                             onPressed: resumeTimer,
-                            child: const Text('Resume',
-                                style: TextStyle(fontSize: 20)),
+                            child: Text(loc.resume,
+                                style: const TextStyle(fontSize: 20)),
                           ),
                         ),
                       ),
                     const SizedBox(width: 16),
                     Semantics(
-                      label: 'Cancel Timer Button',
+                      label: loc.cancel,
                       button: true,
                       child: SizedBox(
                         width: 140,
                         height: 56,
                         child: ElevatedButton(
                           onPressed: cancelTimer,
-                          child: const Text('Cancel',
-                              style: TextStyle(fontSize: 20)),
+                          child: Text(loc.cancel,
+                              style: const TextStyle(fontSize: 20)),
                         ),
                       ),
                     ),

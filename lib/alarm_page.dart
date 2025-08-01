@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:za_warudo/alarm_provider.dart';
 import 'package:za_warudo/trigger_service.dart';
@@ -14,8 +15,9 @@ class AlarmPage extends StatefulWidget {
 class _AlarmPageState extends State<AlarmPage> {
   void setAlarm() {
     final provider = Provider.of<AlarmProvider>(context, listen: false);
+    final loc = AppLocalizations.of(context)!;
     if (provider.alarmTime == null) {
-      _showErrorDialog('Please set an alarm time.');
+      _showErrorDialog(loc.pleaseSetAlarmTime);
       return;
     }
     provider.setAlarmSet(true);
@@ -44,21 +46,22 @@ class _AlarmPageState extends State<AlarmPage> {
         );
         _showAlarmDialog();
       } catch (e) {
-        _showErrorDialog('Failed to trigger alarm:\n\n${e.toString()}');
+        _showErrorDialog(loc.failedToTriggerAlarm(e.toString()));
       }
     });
   }
 
   void _showErrorDialog(String message) {
+    final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Error'),
+        title: Text(loc.error),
         content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: Text(loc.ok),
           ),
         ],
       ),
@@ -66,15 +69,16 @@ class _AlarmPageState extends State<AlarmPage> {
   }
 
   void _showAlarmDialog() {
+    final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Alarm!'),
-        content: const Text('Your alarm is ringing.'),
+        title: Text(loc.alarm),
+        content: Text(loc.alarmRinging),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: Text(loc.ok),
           ),
         ],
       ),
@@ -85,21 +89,22 @@ class _AlarmPageState extends State<AlarmPage> {
   Widget build(BuildContext context) {
     return Consumer<AlarmProvider>(
       builder: (context, provider, child) {
+        final loc = AppLocalizations.of(context)!;
         return Scaffold(
-          appBar: AppBar(title: const Text('Alarm')),
+          appBar: AppBar(title: Text(loc.alarm)),
           body: Column(
             children: [
               ListTile(
-                title: const Text('Alarm Time'),
+                title: Text(loc.alarmTime),
                 subtitle: Text(provider.alarmTime == null
-                    ? 'Not set'
+                    ? loc.notSet
                     : provider.alarmTime!.format(context)),
                 trailing: IconButton(
                   icon: const Icon(Icons.access_time),
                   onPressed: () async {
                     TimeOfDay? picked = await showTimePicker(
                       context: context,
-                      initialTime: TimeOfDay.now(),
+                      initialTime: provider.alarmTime ?? TimeOfDay.now(),
                     );
                     if (picked != null) {
                       provider.setAlarmTime(picked);
@@ -118,20 +123,17 @@ class _AlarmPageState extends State<AlarmPage> {
                 },
               ),
               Semantics(
-                label: provider.isAlarmSet
-                    ? 'Alarm Set Button'
-                    : 'Set Alarm Button',
+                label: provider.isAlarmSet ? loc.alarmSet : loc.setAlarm,
                 button: true,
                 child: SizedBox(
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
                     onPressed: provider.isAlarmSet ? null : setAlarm,
-                    child: provider.isAlarmSet
-                        ? const Text('Alarm Set!',
-                            style: TextStyle(fontSize: 20))
-                        : const Text('Set Alarm',
-                            style: TextStyle(fontSize: 20)),
+                    child: Text(
+                      provider.isAlarmSet ? loc.alarmSet : loc.setAlarm,
+                      style: const TextStyle(fontSize: 20),
+                    ),
                   ),
                 ),
               ),

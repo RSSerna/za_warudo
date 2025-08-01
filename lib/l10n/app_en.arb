@@ -30,5 +30,6 @@
     "failedToTriggerTimer": "Failed to trigger timer actions:\n{error}",
     "changeLanguage": "Change Language",
     "save": "Save",
-    "language": "Language"
+    "language": "Language",
+    "timeRemaining": "Time Remaining"
 }

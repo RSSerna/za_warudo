@@ -30,5 +30,6 @@
     "failedToTriggerTimer": "No se pudieron activar las acciones del temporizador:\n{error}",
     "changeLanguage": "Cambiar idioma",
     "save": "Guardar",
-    "language": "Idioma"
+    "language": "Idioma",
+    "timeRemaining": "Tiempo restante"
 }
