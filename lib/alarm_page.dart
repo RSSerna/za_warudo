@@ -14,7 +14,10 @@ class AlarmPage extends StatefulWidget {
 class _AlarmPageState extends State<AlarmPage> {
   void setAlarm() {
     final provider = Provider.of<AlarmProvider>(context, listen: false);
-    if (provider.alarmTime == null) return;
+    if (provider.alarmTime == null) {
+      _showErrorDialog('Please set an alarm time.');
+      return;
+    }
     provider.setAlarmSet(true);
     final now = DateTime.now();
     final alarmDateTime = DateTime(
@@ -30,16 +33,36 @@ class _AlarmPageState extends State<AlarmPage> {
 
     Future.delayed(waitDuration, () async {
       provider.setAlarmSet(false);
-      await TriggerService.triggerAll(
-        context: context,
-        sound: provider.sound,
-        vibration: provider.vibration,
-        colorFlash: provider.colorFlash,
-        flashlight: provider.flashlight,
-        manualStop: provider.manualStop,
-      );
-      _showAlarmDialog();
+      try {
+        await TriggerService.triggerAll(
+          context: context,
+          sound: provider.sound,
+          vibration: provider.vibration,
+          colorFlash: provider.colorFlash,
+          flashlight: provider.flashlight,
+          manualStop: provider.manualStop,
+        );
+        _showAlarmDialog();
+      } catch (e) {
+        _showErrorDialog('Failed to trigger alarm:\n\n${e.toString()}');
+      }
     });
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showAlarmDialog() {

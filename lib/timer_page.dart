@@ -41,16 +41,41 @@ class _TimerPageState extends State<TimerPage> {
       if (provider.remaining.inSeconds <= 0) {
         timer.cancel();
         provider.setTimerRunning(false);
-        TriggerService.triggerAll(
-          context: context,
-          sound: provider.sound,
-          vibration: provider.vibration,
-          colorFlash: provider.colorFlash,
-          flashlight: provider.flashlight,
-          manualStop: provider.manualStop,
-        ).then((_) => _showTimerDialog());
+        _triggerWithErrorHandling(provider);
       }
     });
+  }
+
+  void _triggerWithErrorHandling(TimerProvider provider) async {
+    try {
+      await TriggerService.triggerAll(
+        context: context,
+        sound: provider.sound,
+        vibration: provider.vibration,
+        colorFlash: provider.colorFlash,
+        flashlight: provider.flashlight,
+        manualStop: provider.manualStop,
+      );
+      _showTimerDialog();
+    } catch (e) {
+      _showErrorDialog('Failed to trigger timer actions:\n\n${e.toString()}');
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showTimerDialog() {
