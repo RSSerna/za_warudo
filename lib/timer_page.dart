@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:za_warudo/helpers.dart';
 import 'package:za_warudo/trigger_service.dart';
@@ -18,8 +20,9 @@ class _TimerPageState extends State<TimerPage> {
   bool manualStop = false;
   bool isPaused = false;
   Duration timerDuration = const Duration(seconds: 10);
-
   Duration remaining = Duration.zero;
+  Timer? _timer;
+
   void startTimer() {
     if (timerDuration.inSeconds == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -32,35 +35,31 @@ class _TimerPageState extends State<TimerPage> {
       isPaused = false;
       remaining = timerDuration;
     });
-    // Feedback: vibrate or play sound
     TriggerService.vibrateDevice(repeat: false);
-    _tick();
-  }
-
-  void _tick() {
-    if (!isRunning) return;
-    if (remaining.inSeconds <= 0) {
-      setState(() {
-        isRunning = false;
-      });
-      TriggerService.triggerAll(
-        context: context,
-        sound: sound,
-        vibration: vibration,
-        colorFlash: colorFlash,
-        flashlight: flashlight,
-        manualStop: manualStop,
-      ).then((_) => _showTimerDialog());
-      return;
-    }
-    Future.delayed(const Duration(seconds: 1), () {
-      if (!isRunning) return;
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!isRunning) {
+        timer.cancel();
+        return;
+      }
       if (!isPaused) {
         setState(() {
           remaining = remaining - const Duration(seconds: 1);
         });
       }
-      _tick();
+      if (remaining.inSeconds <= 0) {
+        timer.cancel();
+        setState(() {
+          isRunning = false;
+        });
+        TriggerService.triggerAll(
+          context: context,
+          sound: sound,
+          vibration: vibration,
+          colorFlash: colorFlash,
+          flashlight: flashlight,
+          manualStop: manualStop,
+        ).then((_) => _showTimerDialog());
+      }
     });
   }
 
@@ -84,7 +83,6 @@ class _TimerPageState extends State<TimerPage> {
     setState(() {
       isPaused = true;
     });
-    // Feedback: vibrate or play sound
     TriggerService.vibrateDevice(repeat: false);
   }
 
@@ -92,7 +90,6 @@ class _TimerPageState extends State<TimerPage> {
     setState(() {
       isPaused = false;
     });
-    // Feedback: vibrate or play sound
     TriggerService.vibrateDevice(repeat: false);
   }
 
@@ -102,8 +99,14 @@ class _TimerPageState extends State<TimerPage> {
       isPaused = false;
       remaining = timerDuration;
     });
-    // Feedback: vibrate or play sound
+    _timer?.cancel();
     TriggerService.vibrateDevice(repeat: false);
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -133,30 +136,33 @@ class _TimerPageState extends State<TimerPage> {
             ),
           ),
           if (!isRunning) ...[
-            SwitchListTile(
-              title: const Text('Sound'),
-              value: sound,
-              onChanged: (val) => setState(() => sound = val),
-            ),
-            SwitchListTile(
-              title: const Text('Vibration'),
-              value: vibration,
-              onChanged: (val) => setState(() => vibration = val),
-            ),
-            SwitchListTile(
-              title: const Text('Color Flash'),
-              value: colorFlash,
-              onChanged: (val) => setState(() => colorFlash = val),
-            ),
-            SwitchListTile(
-              title: const Text('Flashlight'),
-              value: flashlight,
-              onChanged: (val) => setState(() => flashlight = val),
-            ),
-            SwitchListTile(
-              title: const Text('Manual Stop (show Stop button)'),
-              value: manualStop,
-              onChanged: (val) => setState(() => manualStop = val),
+            TimerSwitches(
+              sound: sound,
+              vibration: vibration,
+              colorFlash: colorFlash,
+              flashlight: flashlight,
+              manualStop: manualStop,
+              onChanged: (String key, bool value) {
+                setState(() {
+                  switch (key) {
+                    case 'sound':
+                      sound = value;
+                      break;
+                    case 'vibration':
+                      vibration = value;
+                      break;
+                    case 'colorFlash':
+                      colorFlash = value;
+                      break;
+                    case 'flashlight':
+                      flashlight = value;
+                      break;
+                    case 'manualStop':
+                      manualStop = value;
+                      break;
+                  }
+                });
+              },
             ),
             ElevatedButton(
               onPressed: isRunning ? null : startTimer,
@@ -212,5 +218,57 @@ class _TimerPageState extends State<TimerPage> {
     final m = d.inMinutes % 60;
     final s = d.inSeconds % 60;
     return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
+}
+
+class TimerSwitches extends StatelessWidget {
+  final bool sound;
+  final bool vibration;
+  final bool colorFlash;
+  final bool flashlight;
+  final bool manualStop;
+  final void Function(String, bool) onChanged;
+
+  const TimerSwitches({
+    super.key,
+    required this.sound,
+    required this.vibration,
+    required this.colorFlash,
+    required this.flashlight,
+    required this.manualStop,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SwitchListTile(
+          title: const Text('Sound'),
+          value: sound,
+          onChanged: (val) => onChanged('sound', val),
+        ),
+        SwitchListTile(
+          title: const Text('Vibration'),
+          value: vibration,
+          onChanged: (val) => onChanged('vibration', val),
+        ),
+        SwitchListTile(
+          title: const Text('Color Flash'),
+          value: colorFlash,
+          onChanged: (val) => onChanged('colorFlash', val),
+        ),
+        SwitchListTile(
+          title: const Text('Flashlight'),
+          value: flashlight,
+          onChanged: (val) => onChanged('flashlight', val),
+        ),
+        SwitchListTile(
+          title: const Text('Manual Stop (show Stop button)'),
+          value: manualStop,
+          onChanged: (val) => onChanged('manualStop', val),
+        ),
+      ],
+    );
   }
 }
