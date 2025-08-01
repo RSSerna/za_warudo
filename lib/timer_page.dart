@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:za_warudo/helpers.dart';
 import 'package:za_warudo/trigger_service.dart';
+import 'package:za_warudo/trigger_switches.dart';
 
 class TimerPage extends StatefulWidget {
   const TimerPage({super.key});
@@ -136,7 +137,7 @@ class _TimerPageState extends State<TimerPage> {
             ),
           ),
           if (!isRunning) ...[
-            TimerSwitches(
+            TriggerSwitches(
               sound: sound,
               vibration: vibration,
               colorFlash: colorFlash,
@@ -218,57 +219,5 @@ class _TimerPageState extends State<TimerPage> {
     final m = d.inMinutes % 60;
     final s = d.inSeconds % 60;
     return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
-  }
-}
-
-class TimerSwitches extends StatelessWidget {
-  final bool sound;
-  final bool vibration;
-  final bool colorFlash;
-  final bool flashlight;
-  final bool manualStop;
-  final void Function(String, bool) onChanged;
-
-  const TimerSwitches({
-    super.key,
-    required this.sound,
-    required this.vibration,
-    required this.colorFlash,
-    required this.flashlight,
-    required this.manualStop,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SwitchListTile(
-          title: const Text('Sound'),
-          value: sound,
-          onChanged: (val) => onChanged('sound', val),
-        ),
-        SwitchListTile(
-          title: const Text('Vibration'),
-          value: vibration,
-          onChanged: (val) => onChanged('vibration', val),
-        ),
-        SwitchListTile(
-          title: const Text('Color Flash'),
-          value: colorFlash,
-          onChanged: (val) => onChanged('colorFlash', val),
-        ),
-        SwitchListTile(
-          title: const Text('Flashlight'),
-          value: flashlight,
-          onChanged: (val) => onChanged('flashlight', val),
-        ),
-        SwitchListTile(
-          title: const Text('Manual Stop (show Stop button)'),
-          value: manualStop,
-          onChanged: (val) => onChanged('manualStop', val),
-        ),
-      ],
-    );
   }
 }
