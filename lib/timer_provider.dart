@@ -9,6 +9,9 @@ class TimerProvider extends ChangeNotifier {
   bool flashlight = false;
   bool manualStop = false;
 
+  // New: Custom timer sound URI/path
+  String? timerSoundPath;
+
   Duration timerDuration = const Duration(seconds: 10);
   bool isRunning = false;
   bool isPaused = false;
@@ -45,6 +48,18 @@ class TimerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // New: Set and persist custom timer sound path
+  Future<void> setTimerSoundPath(String? path) async {
+    timerSoundPath = path;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    if (path != null) {
+      await prefs.setString(PrefKeys.timerSoundPath, path);
+    } else {
+      await prefs.remove(PrefKeys.timerSoundPath);
+    }
+  }
+
   Future<void> setTimerDuration(Duration d) async {
     timerDuration = d;
     notifyListeners();
@@ -78,6 +93,7 @@ class TimerProvider extends ChangeNotifier {
     if (seconds != null) {
       timerDuration = Duration(seconds: seconds);
     }
+    timerSoundPath = prefs.getString(PrefKeys.timerSoundPath);
     notifyListeners();
   }
 }

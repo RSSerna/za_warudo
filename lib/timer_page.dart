@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +17,14 @@ class TimerPage extends StatefulWidget {
 }
 
 class _TimerPageState extends State<TimerPage> {
+  Future<void> _pickSoundFile(TimerProvider provider) async {
+    FilePickerResult? result =
+        await FilePicker.platform.pickFiles(type: FileType.audio);
+    if (result != null && result.files.single.path != null) {
+      await provider.setTimerSoundPath(result.files.single.path);
+    }
+  }
+
   Timer? _timer;
 
   void startTimer() {
@@ -151,6 +160,20 @@ class _TimerPageState extends State<TimerPage> {
                             provider.setTimerDuration(picked);
                           }
                         },
+                ),
+              ),
+              ListTile(
+                title: Text('Custom Timer Sound'),
+                subtitle: Text(
+                  provider.timerSoundPath != null
+                      ? provider.timerSoundPath!.split(RegExp(r'[\\/]')).last
+                      : 'Default',
+                ),
+                trailing: IconButton(
+                  icon: const Icon(Icons.music_note),
+                  onPressed: provider.isRunning
+                      ? null
+                      : () => _pickSoundFile(provider),
                 ),
               ),
               if (!provider.isRunning) ...[

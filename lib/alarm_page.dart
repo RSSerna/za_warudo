@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -13,6 +14,14 @@ class AlarmPage extends StatefulWidget {
 }
 
 class _AlarmPageState extends State<AlarmPage> {
+  Future<void> _pickSoundFile(AlarmProvider provider) async {
+    FilePickerResult? result =
+        await FilePicker.platform.pickFiles(type: FileType.audio);
+    if (result != null && result.files.single.path != null) {
+      await provider.setAlarmSoundPath(result.files.single.path);
+    }
+  }
+
   void setAlarm() {
     final provider = Provider.of<AlarmProvider>(context, listen: false);
     final loc = AppLocalizations.of(context)!;
@@ -110,6 +119,18 @@ class _AlarmPageState extends State<AlarmPage> {
                       provider.setAlarmTime(picked);
                     }
                   },
+                ),
+              ),
+              ListTile(
+                title: Text('Custom Alarm Sound'),
+                subtitle: Text(
+                  provider.alarmSoundPath != null
+                      ? provider.alarmSoundPath!.split(RegExp(r'[\\/]')).last
+                      : 'Default',
+                ),
+                trailing: IconButton(
+                  icon: const Icon(Icons.music_note),
+                  onPressed: () => _pickSoundFile(provider),
                 ),
               ),
               TriggerSwitches(

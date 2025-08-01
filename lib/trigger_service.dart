@@ -62,21 +62,28 @@ class TriggerService {
   static bool _isVibrating = false;
   static bool _isFlashing = false;
 
-  static Future<void> playSound({bool loop = true}) async {
+  static Future<void> playSound({bool loop = true, String? filePath}) async {
     try {
       _player ??= AudioPlayer();
       await _player!.stop();
-      await _player!.play(
-        AssetSource('sounds/alarm.mp3'),
-        volume: 1.0,
-        // Looping is not directly supported in audioplayers 5.x, so we can replay onComplete if needed
-      );
-      if (loop) {
-        _player!.onPlayerComplete.listen((event) {
-          if (_player != null) {
-            _player!.play(AssetSource('sounds/alarm.mp3'));
-          }
-        });
+      if (filePath != null && filePath.isNotEmpty) {
+        await _player!.play(DeviceFileSource(filePath), volume: 1.0);
+        if (loop) {
+          _player!.onPlayerComplete.listen((event) {
+            if (_player != null) {
+              _player!.play(DeviceFileSource(filePath), volume: 1.0);
+            }
+          });
+        }
+      } else {
+        await _player!.play(AssetSource('sounds/alarm.mp3'), volume: 1.0);
+        if (loop) {
+          _player!.onPlayerComplete.listen((event) {
+            if (_player != null) {
+              _player!.play(AssetSource('sounds/alarm.mp3'), volume: 1.0);
+            }
+          });
+        }
       }
     } catch (e) {
       debugPrint('Error playing sound: $e');
@@ -146,10 +153,11 @@ class TriggerService {
     required bool colorFlash,
     required bool flashlight,
     bool manualStop = false,
+    String? soundPath,
   }) async {
     // Start all triggers
     List<Future> futures = [];
-    if (sound) futures.add(playSound());
+    if (sound) futures.add(playSound(filePath: soundPath));
     if (vibration) futures.add(vibrateDevice());
     if (flashlight) futures.add(flashLight(repeat: manualStop));
 

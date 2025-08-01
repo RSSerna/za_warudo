@@ -8,14 +8,16 @@ class PrefKeys {
   static const alarmManualStop = 'alarm_manualStop';
   static const alarmHour = 'alarm_hour';
   static const alarmMinute = 'alarm_minute';
+  static const alarmSoundPath = 'alarm_sound_path';
 
   // Timer
   static const timerSound = 'timer_sound';
   static const timerVibration = 'timer_vibration';
   static const timerColorFlash = 'timer_colorFlash';
   static const timerFlashlight = 'timer_flashlight';
-  static const timerManualStop = 'timer_manualStop';
+  static const timerManualStop = 'timer_manual_stop';
   static const timerDuration = 'timer_duration';
+  static const timerSoundPath = 'timer_sound_path';
 
   // Settings
   static const locale = 'locale';

@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:za_warudo/pref_keys.dart';
 
 class AlarmProvider extends ChangeNotifier {
+  // New: Custom alarm sound URI/path
+  String? alarmSoundPath;
   bool sound = false;
   bool vibration = false;
   bool colorFlash = false;
@@ -43,6 +45,18 @@ class AlarmProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // New: Set and persist custom alarm sound path
+  Future<void> setAlarmSoundPath(String? path) async {
+    alarmSoundPath = path;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    if (path != null) {
+      await prefs.setString(PrefKeys.alarmSoundPath, path);
+    } else {
+      await prefs.remove(PrefKeys.alarmSoundPath);
+    }
+  }
+
   Future<void> setAlarmTime(TimeOfDay? t) async {
     alarmTime = t;
     notifyListeners();
@@ -70,6 +84,7 @@ class AlarmProvider extends ChangeNotifier {
     if (hour != null && minute != null) {
       alarmTime = TimeOfDay(hour: hour, minute: minute);
     }
+    alarmSoundPath = prefs.getString(PrefKeys.alarmSoundPath);
     notifyListeners();
   }
 }
