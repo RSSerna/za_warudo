@@ -17,49 +17,45 @@ class AlarmProvider extends ChangeNotifier {
   }
 
   Future<void> setOption(String key, bool value) async {
+    final prefs = await SharedPreferences.getInstance();
     switch (key) {
       case 'sound':
         sound = value;
+        await prefs.setBool(PrefKeys.alarmSound, value);
         break;
       case 'vibration':
         vibration = value;
+        await prefs.setBool(PrefKeys.alarmVibration, value);
         break;
       case 'colorFlash':
         colorFlash = value;
+        await prefs.setBool(PrefKeys.alarmColorFlash, value);
         break;
       case 'flashlight':
         flashlight = value;
+        await prefs.setBool(PrefKeys.alarmFlashlight, value);
         break;
       case 'manualStop':
         manualStop = value;
+        await prefs.setBool(PrefKeys.alarmManualStop, value);
         break;
     }
     notifyListeners();
-    await _savePrefs();
   }
 
   Future<void> setAlarmTime(TimeOfDay? t) async {
     alarmTime = t;
     notifyListeners();
-    await _savePrefs();
+    if (alarmTime != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(PrefKeys.alarmHour, alarmTime!.hour);
+      await prefs.setInt(PrefKeys.alarmMinute, alarmTime!.minute);
+    }
   }
 
   void setAlarmSet(bool set) {
     isAlarmSet = set;
     notifyListeners();
-  }
-
-  Future<void> _savePrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setBool(PrefKeys.alarmSound, sound);
-    prefs.setBool(PrefKeys.alarmVibration, vibration);
-    prefs.setBool(PrefKeys.alarmColorFlash, colorFlash);
-    prefs.setBool(PrefKeys.alarmFlashlight, flashlight);
-    prefs.setBool(PrefKeys.alarmManualStop, manualStop);
-    if (alarmTime != null) {
-      prefs.setInt(PrefKeys.alarmHour, alarmTime!.hour);
-      prefs.setInt(PrefKeys.alarmMinute, alarmTime!.minute);
-    }
   }
 
   Future<void> _loadPrefs() async {

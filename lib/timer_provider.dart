@@ -19,31 +19,37 @@ class TimerProvider extends ChangeNotifier {
   }
 
   Future<void> setOption(String key, bool value) async {
+    final prefs = await SharedPreferences.getInstance();
     switch (key) {
       case 'sound':
         sound = value;
+        await prefs.setBool(PrefKeys.timerSound, value);
         break;
       case 'vibration':
         vibration = value;
+        await prefs.setBool(PrefKeys.timerVibration, value);
         break;
       case 'colorFlash':
         colorFlash = value;
+        await prefs.setBool(PrefKeys.timerColorFlash, value);
         break;
       case 'flashlight':
         flashlight = value;
+        await prefs.setBool(PrefKeys.timerFlashlight, value);
         break;
       case 'manualStop':
         manualStop = value;
+        await prefs.setBool(PrefKeys.timerManualStop, value);
         break;
     }
     notifyListeners();
-    await _savePrefs();
   }
 
   Future<void> setTimerDuration(Duration d) async {
     timerDuration = d;
     notifyListeners();
-    await _savePrefs();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(PrefKeys.timerDuration, timerDuration.inSeconds);
   }
 
   void setTimerRunning(bool running) {
@@ -59,16 +65,6 @@ class TimerProvider extends ChangeNotifier {
   void setTimerRemaining(Duration d) {
     remaining = d;
     notifyListeners();
-  }
-
-  Future<void> _savePrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setBool(PrefKeys.timerSound, sound);
-    prefs.setBool(PrefKeys.timerVibration, vibration);
-    prefs.setBool(PrefKeys.timerColorFlash, colorFlash);
-    prefs.setBool(PrefKeys.timerFlashlight, flashlight);
-    prefs.setBool(PrefKeys.timerManualStop, manualStop);
-    prefs.setInt(PrefKeys.timerDuration, timerDuration.inSeconds);
   }
 
   Future<void> _loadPrefs() async {
