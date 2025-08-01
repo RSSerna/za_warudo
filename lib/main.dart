@@ -4,19 +4,22 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:za_warudo/alarm_page.dart';
 import 'package:za_warudo/alarm_provider.dart';
-import 'package:za_warudo/language_settings_screen.dart';
 import 'package:za_warudo/settings_provider.dart';
+import 'package:za_warudo/settings_screen.dart';
+import 'package:za_warudo/theme_provider.dart';
 import 'package:za_warudo/timer_page.dart';
 import 'package:za_warudo/timer_provider.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => SettingsProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+      ],
       child: const MyApp(),
     ),
   );
-// ...existing code...
 }
 
 class MyApp extends StatelessWidget {
@@ -25,12 +28,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<SettingsProvider>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return MaterialApp(
       title: 'Timer & Alarm App',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: themeProvider.themeMode,
       locale: settings.locale,
       localizationsDelegates: [
         AppLocalizations.delegate,
@@ -63,7 +66,7 @@ class HomePage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const LanguageSettingsScreen(),
+                  builder: (context) => const SettingsScreen(),
                 ),
               );
             },
@@ -108,5 +111,3 @@ class HomePage extends StatelessWidget {
     );
   }
 }
-
-// LanguageSettingsScreen moved to its own file.

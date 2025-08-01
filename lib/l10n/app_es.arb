@@ -31,5 +31,12 @@
     "changeLanguage": "Cambiar idioma",
     "save": "Guardar",
     "language": "Idioma",
+    "settings": "Ajustes",
+    "theme": "Tema",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema",
+    "english": "Inglés",
+    "spanish": "Español",
     "timeRemaining": "Tiempo restante"
 }

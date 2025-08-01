@@ -31,5 +31,12 @@
     "changeLanguage": "Change Language",
     "save": "Save",
     "language": "Language",
+    "settings": "Settings",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "english": "English",
+    "spanish": "Spanish",
     "timeRemaining": "Time Remaining"
 }
